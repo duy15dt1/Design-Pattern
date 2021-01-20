@@ -1,101 +1,68 @@
 #include <iostream>
-#include <memory>
-#include <random>
+#include <vector>
+#include <string>
+#include <conio.h>
 using namespace std;
 
-class Shape;
-
-enum class ShapeType{
-    circle,
-    square
+//base class
+class EProducts{
+public:
+    virtual void ShowName() = 0;
 };
 
-class ShapeFactory{
+class Phone : public EProducts{
 public:
-    static Shape* CreateShape(ShapeType Type);
-};
-
-class Shape{
-public:
-    ~Shape();
-
-    //pure virtual cannot create instances of shape
-    //thus shape is an abstract base class
-    virtual void Draw() const = 0;
-};
-
-class Circle : public Shape{
-private:
-    float mRadius;
-public:
-    explicit Circle(float radius = 0.0F){
-        mRadius = radius;
+    void ShowName(){
+        cout << "This is a phone" << endl;
     }
-    ~Circle(){
-        cout << "Circle with radius " << mRadius << " destroyed" << endl;
+};
+
+class Tablet : public EProducts{
+public:
+    void ShowName(){
+        cout << "This is a tablet" << endl;
+    }
+};
+
+//interface
+class CreateProduct{
+public:
+    enum TypeProduct{
+        PHONE = 0,
+        TABLET = 1,
     };
-
-    void Draw() const override{
-        cout << "Im a circle with radius " << mRadius << endl;
+    EProducts* GetProduct(int type){
+        if (type == PHONE) return new Phone;
+        else if (type == TABLET) return new Tablet;
+        return NULL;
     }
 };
 
-class Square : public Shape{
+class ShopProduct{
 private:
-    float mLength;
+    vector<EProducts*> product_list;
 public:
-    explicit Square(float length = 0.0F){
-        mLength = length;
+    ShopProduct(){}
+    void AddProduct(EProducts* product){
+        product_list.push_back(product);
     }
-    ~Square(){
-        cout << "Square with length " << mLength << " destroyed" << endl;
-    }
-
-    void Draw() const override{
-        cout << "Im a square with length " << mLength << endl;
-    }
+    vector<EProducts*> get_product() {return product_list;}
 };
-
-Shape* ShapeFactory::CreateShape(ShapeType Type){
-    switch(Type){
-        case ShapeType::circle:{
-            float radius;
-            cout << "Enter the radius for the new circle ";
-            cin >> radius;
-            if (radius < 0.0F){
-                cout << "Bad enter. Take default" << endl;
-                radius = 0.0F;
-            }
-            return new Circle(radius);
-            break;
-        }
-        case ShapeType::square:{
-            float length;
-            cout << "Enter the length for the new square ";
-            cin >> length;
-            if (length < 0.0F){
-                cout << "Bad enter. Take default" << endl;
-                length = 0.0F;
-            }
-            return new Square(length);
-            break;
-        }
-    }
-}
-
-void TestShape(ShapeType Type){
-    //create a shape
-    //unique ptr is very important
-    unique_ptr<Shape> shape_ptr(ShapeFactory::CreateShape(Type));
-
-    //draw the shape
-    shape_ptr->Draw();
-    return;
-}
 
 int main(){
-    TestShape(ShapeType::circle);
+    CreateProduct* p_shop = new CreateProduct();
 
-    TestShape(ShapeType::square);
+    EProducts* phone = p_shop->GetProduct(CreateProduct::PHONE);
+    EProducts* tablet = p_shop->GetProduct(CreateProduct::TABLET);
+
+    ShopProduct shop_product;
+    shop_product.AddProduct(phone);
+    shop_product.AddProduct(tablet);
+
+    vector<EProducts*> list_product = shop_product.get_product();
+    for(int i=0; i<list_product.size(); i++){
+        EProducts* product = list_product.at(i);
+        product->ShowName();
+    }
     return 0;
 }
